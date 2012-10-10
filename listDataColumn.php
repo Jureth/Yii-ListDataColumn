@@ -6,7 +6,7 @@
  * @package baseclass_extensions
  * @subpackage CDataColumn
  * @author Yuri 'Jureth' Minin <JurethInterior@yandex.ru>
- * @version v1.0,2010/11/13
+ * @version v1.1,2012/10/10
  */
 class listDataColumn extends CDataColumn {
 
@@ -14,7 +14,7 @@ class listDataColumn extends CDataColumn {
      * Основной тег списка. Может быть 'ul' либо 'ol'
      * @var string
      */
-    public $list_type = 'ul'; //ul or ol
+    public $listType = 'ul'; //ul or ol
     /**
      * HTML-параметры элементов (li) списка.
      * @var array
@@ -49,15 +49,24 @@ class listDataColumn extends CDataColumn {
 
     protected function renderFilterCellContent(){
         if ( $this->filter !== false && $this->grid->filter !== null && strpos($this->name, '.') === false ){
-            if ( is_array($this->filter) ) echo CHtml::activeDropDownList($this->grid->filter, $this->name, $this->filter, array( 'id' => false, 'prompt' => '' ));
-            else echo $this->filter;
+            if ( is_array($this->filter) ) {
+                echo CHtml::activeDropDownList(
+                    $this->grid->filter,
+                    $this->name,
+                    $this->filter,
+                    array( 'id' => false, 'prompt' => '' )
+                );
+            }else{
+                echo $this->filter;
+            }
+        }else{
+            parent::renderFilterCellContent();
         }
-        else parent::renderFilterCellContent();
     }
 
     protected function renderDataCellContent($row, $data){
 
-        if ( !in_array($this->list_type, array( 'ul', 'ol' )) ){
+        if ( !in_array($this->listType, array( 'ul', 'ol' )) ){
             throw new Exception('list type is not valid');
         }
         if ( !$this->name ){
@@ -71,19 +80,22 @@ class listDataColumn extends CDataColumn {
             return;
         } //throw new exception('Field '.$this->name. ' is not an array!');
 
-        $result = CHtml::tag($this->list_type, $this->htmlOptions, false, false);
+        $result = CHtml::tag($this->listType, $this->htmlOptions, false, false);
 
         foreach( $list as $value ){
             if ( $this->valueExpression !== NULL ){
-                $content = $this->evaluateExpression($this->valueExpression, array( 'data' => $value, 'row' => $row ));
+                $content = $this->evaluateExpression(
+                    $this->valueExpression,
+                    array( 'data' => $value, 'row' => $row )
+                );
             }else{
                 $content = CHtml::value($value, $field);
             }
             $result .= CHtml::tag('li', $this->itemHtmlOptions, $content, true);
         }
 
-        $result .= CHtml::closeTag($this->list_type);
+        $result .= CHtml::closeTag($this->listType);
         echo $result;
     }
-
 }
+
